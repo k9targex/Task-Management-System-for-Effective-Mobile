@@ -1,6 +1,6 @@
 package com.taskmanagement.model;
 
- public enum RoleList {
-    Author,
-     Performer
+public enum RoleList {
+  AUTHOR,
+  PERFORMER
 }
