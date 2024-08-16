@@ -1,6 +1,7 @@
 package com.taskmanagement.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.taskmanagement.model.RoleList;
 import jakarta.persistence.*;
 import java.util.List;
 import lombok.*;
@@ -17,14 +18,15 @@ public class User {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "user")
+  @Column(name = "username")
   private String username;
 
   private String email;
 
   private String password;
 
-  private String role;
+  @Enumerated(EnumType.STRING)
+  private RoleList role;
 
   @OneToMany(
       mappedBy = "user",

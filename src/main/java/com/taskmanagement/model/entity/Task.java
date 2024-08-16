@@ -23,6 +23,8 @@ public class Task {
 
     private String description;
 
+    private String comments;
+
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
