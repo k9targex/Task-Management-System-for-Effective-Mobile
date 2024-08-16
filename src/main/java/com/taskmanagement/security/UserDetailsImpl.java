@@ -16,6 +16,7 @@ public class UserDetailsImpl implements UserDetails {
     private Long id;
     private String password;
     private String username;
+    private String email;
     private RoleList role;
 
     /**
@@ -26,7 +27,7 @@ public class UserDetailsImpl implements UserDetails {
      */
     public static UserDetailsImpl build(User user) {
         return new UserDetailsImpl(
-                user.getId(), user.getPassword(), user.getUsername(), user.getRole());
+                user.getId(), user.getPassword(), user.getUsername(),user.getEmail(), user.getRole());
     }
 
     @Override

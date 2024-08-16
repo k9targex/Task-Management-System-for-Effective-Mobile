@@ -49,13 +49,14 @@ public class SecurityService {
       throw new UnauthorizedException(
           String.format("Name \"%s\" already taken (((", signUpRequest.getUsername()));
     }
+    if (userRepository.existsUserByEmail(signUpRequest.getEmail()).booleanValue()) {
+      throw new UnauthorizedException(
+          String.format("Email \"%s\" already taken (((", signUpRequest.getEmail()));
+    }
     User user = new User();
     user.setUsername(signUpRequest.getUsername());
-    if (signUpRequest.getPassword() == null || signUpRequest.getPassword().isEmpty())
-      throw new UnauthorizedException(
-          String.format("Password \"%s\" is not valid", signUpRequest.getPassword()));
     user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-
+    user.setEmail(signUpRequest.getEmail());
     user.setRole(signUpRequest.getRole());
     userRepository.save(user);
     Authentication authentication = null;
@@ -73,9 +74,10 @@ public class SecurityService {
       authentication =
           authenticationManager.authenticate(
               new UsernamePasswordAuthenticationToken(
-                  signInRequest.getUsername(), signInRequest.getPassword()));
+                  userRepository.findUsersByEmail(signInRequest.getEmail()).get().getUsername(),
+                  signInRequest.getPassword()));
     } catch (BadCredentialsException e) {
-      throw new UnauthorizedException("Incorrect username or password");
+      throw new UnauthorizedException("Incorrect email or password");
     }
     SecurityContextHolder.getContext().setAuthentication(authentication);
     return (jwtCore.generateToken(authentication));

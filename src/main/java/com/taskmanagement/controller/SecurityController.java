@@ -26,8 +26,7 @@ public class SecurityController {
 
         String token = securityService.register(signUpRequest);
         setCookie(token,response);
-
-        //for using postman
+        //for postman
         return ResponseEntity.ok(token);
     }
 
@@ -36,8 +35,8 @@ public class SecurityController {
     @PostMapping("/signin")
     ResponseEntity<String> signin(@RequestBody SignInRequest signInRequest, HttpServletResponse response) {
         String token = securityService.login(signInRequest);
-       setCookie(token,response);
-        //for using postman
+        setCookie(token,response);
+        //for postman
         return ResponseEntity.ok(token);
     }
 
