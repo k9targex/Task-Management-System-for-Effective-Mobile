@@ -37,8 +37,8 @@ public class UserController {
   }
   @PostMapping("/task")
   public ResponseEntity<String> createTask(@Valid @RequestBody TaskRequest taskRequest, HttpServletRequest request){
-    userService.createTask(request,taskRequest);
-    return ResponseEntity.ok("Task was successfully added");
+      userService.createTask(request,taskRequest);
+      return ResponseEntity.ok("Task was successfully added");
   }
   @DeleteMapping("/task/{title}")
   public ResponseEntity<String> deleteTask(@PathVariable String title, HttpServletRequest request){
@@ -50,6 +50,14 @@ public class UserController {
   public ResponseEntity<List<Task>> getTasks(HttpServletRequest request){
     return ResponseEntity.ok(userService.getTasks(request));
   }
+
+  @PatchMapping("/task/{task_id}/{performer_id}")
+  public ResponseEntity<String> addPerformer(@PathVariable Long task_id,@PathVariable Long performer_id){
+    userService.addPerformer(task_id,performer_id);
+    return ResponseEntity.ok("Performer was successfully added");
+  }
+
+
 
 
 

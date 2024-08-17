@@ -103,8 +103,12 @@ public class SecurityConfigurator {
                     .hasAuthority("AUTHOR")
                     .requestMatchers(HttpMethod.POST, "/users/task")
                     .hasAuthority("AUTHOR")
+                    .requestMatchers(HttpMethod.PATCH, "/users/task/{task_id}/{performer_id}")
+                    .hasAuthority("AUTHOR")
                     .requestMatchers(HttpMethod.DELETE, "/users/task/{title}")
                     .hasAuthority("AUTHOR")
+                    .requestMatchers(HttpMethod.GET, "/users/task")
+                    .hasAnyAuthority("AUTHOR", "PERFORMER")
                     .anyRequest()
                     .permitAll())
         .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);

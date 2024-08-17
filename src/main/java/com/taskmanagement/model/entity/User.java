@@ -41,6 +41,13 @@ public class User {
           joinColumns = @JoinColumn(name = "user_id"),
           inverseJoinColumns = @JoinColumn(name = "task_id")
   )
-  @JsonIgnore
+//  @JsonIgnore
   private List<Task> tasks;
+
+  @PreRemove
+  public void preRemove() {
+    if (RoleList.AUTHOR.equals(this.role)) {
+      tasks.forEach(task -> task.getUsers().remove(this));
+    }
+  }
 }

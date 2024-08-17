@@ -2,8 +2,10 @@ package com.taskmanagement.service;
 
 import com.taskmanagement.dao.TaskRepository;
 import com.taskmanagement.dao.UserRepository;
+import com.taskmanagement.exception.PerformerNotFound;
 import com.taskmanagement.exception.TaskAlreadyExistException;
 import com.taskmanagement.exception.TaskNotFoundException;
+import com.taskmanagement.model.RoleList;
 import com.taskmanagement.model.dto.TaskRequest;
 import com.taskmanagement.model.entity.Task;
 import com.taskmanagement.model.entity.User;
@@ -11,6 +13,8 @@ import com.taskmanagement.security.JwtCore;
 import com.taskmanagement.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,14 +22,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @Transactional
 @CacheConfig(cacheNames = "data")
 public class UserService implements UserDetailsService {
   private static final String USER_NOT_FOUND_MESSAGE = "User with name \"%s\" does not exist";
+  private static final String PERFORMER_ID_NOT_FOUND_MESSAGE =
+      "Performer with ID \"%s\" does not exist";
+
   private static final String TASK_NOT_FOUND_MESSAGE = "Task with name \"%s\" does not exist";
+  private static final String TASK_ID_NOT_FOUND_MESSAGE = "Task with ID \"%s\" does not exist";
   private static final String TASK_ALREADY_EXIST = "Task with name \"%s\" already exist";
 
   private final UserRepository userRepository;
@@ -53,7 +59,7 @@ public class UserService implements UserDetailsService {
   }
 
   public List<User> getAllUsers() {
-    return userRepository.findAll();
+    return userRepository.findAllWithTasksByRole(RoleList.AUTHOR);
   }
 
   public void createTask(HttpServletRequest request, TaskRequest taskRequest) {
@@ -86,17 +92,44 @@ public class UserService implements UserDetailsService {
     userRepository.save(user);
   }
 
-public List<Task> getTasks(HttpServletRequest request){
-    User user = getUserFromRequest(request);
-    return taskRepository.findTasksByUsers(user).get();
+  public List<Task> getTasks(HttpServletRequest request) {
+    return taskRepository.findTasksByUsers( getUserFromRequest(request)).get();
+  }
 
-}
+  public void addPerformer(Long taskId, Long performerId) {
+    Task task =
+        taskRepository
+            .findById(taskId)
+            .orElseThrow(
+                () -> new TaskNotFoundException(String.format(TASK_ID_NOT_FOUND_MESSAGE, taskId)));
 
+    User performer =
+        userRepository
+            .findByIdAndRole(performerId, RoleList.PERFORMER)
+            .orElseThrow(
+                () ->
+                    new PerformerNotFound(
+                        String.format(PERFORMER_ID_NOT_FOUND_MESSAGE, performerId)));
+    userRepository
+        .findFirstByTasksAndRole(task, RoleList.PERFORMER)
+        .ifPresent(
+            old -> {
+              old.getTasks().remove(task);
+              userRepository.save(old);
+            });
+
+    performer.getTasks().add(task);
+    userRepository.save(performer);
+    taskRepository.save(task);
+  }
 
   private User getUserFromRequest(HttpServletRequest request) {
     String token = jwtCore.getTokenFromRequest(request);
-    return userRepository.findUserByUsername(jwtCore.getNameFromJwt(token)).orElseThrow(
-            () -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MESSAGE, jwtCore.getNameFromJwt(token))));
+    return userRepository
+        .findUserByUsername(jwtCore.getNameFromJwt(token))
+        .orElseThrow(
+            () ->
+                new UsernameNotFoundException(
+                    String.format(USER_NOT_FOUND_MESSAGE, jwtCore.getNameFromJwt(token))));
   }
-
 }
