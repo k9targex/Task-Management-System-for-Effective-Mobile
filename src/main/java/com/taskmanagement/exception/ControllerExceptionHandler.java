@@ -6,6 +6,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentConversionNotSupportedException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.regex.Matcher;
@@ -70,6 +73,14 @@ public class ControllerExceptionHandler {
         log.error(errorMessage);
         return new ResponseError(HttpStatus.BAD_REQUEST, ex.getBindingResult().getFieldError().getDefaultMessage());
     }
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseError handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String errorMessage = ERROR_400 + "Invalid parameter format. Only numeric values are allowed.";
+        log.error(errorMessage);
+        return new ResponseError(HttpStatus.BAD_REQUEST, errorMessage);
+
+    }
+
     /** Обработчик исключения HttpMessageNotReadableException. */
     @ExceptionHandler({HttpMessageNotReadableException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -116,7 +127,8 @@ public class ControllerExceptionHandler {
     @ExceptionHandler({
             UsernameNotFoundException.class,
             TaskNotFoundException.class,
-            UserNotFoundException.class
+            UserNotFoundException.class,
+            PerformerNotFound.class
     })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseError usernameNotFoundException(RuntimeException ex, WebRequest request) {

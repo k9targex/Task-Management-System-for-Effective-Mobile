@@ -1,5 +1,6 @@
 package com.taskmanagement.controller;
 
+import com.taskmanagement.model.dto.CommentRequest;
 import com.taskmanagement.model.dto.TaskRequest;
 import com.taskmanagement.model.entity.Task;
 import com.taskmanagement.model.entity.User;
@@ -32,33 +33,40 @@ public class UserController {
   }
 
   @GetMapping()
-  public ResponseEntity<List<User>> getAllUsers() {
-    return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
+  public ResponseEntity<List<User>> getAllAuthors() {
+    return new ResponseEntity<>(userService.getAllAuthors(), HttpStatus.OK);
   }
-  @PostMapping("/task")
+  @PostMapping("/tasks")
   public ResponseEntity<String> createTask(@Valid @RequestBody TaskRequest taskRequest, HttpServletRequest request){
       userService.createTask(request,taskRequest);
       return ResponseEntity.ok("Task was successfully added");
   }
-  @DeleteMapping("/task/{title}")
-  public ResponseEntity<String> deleteTask(@PathVariable String title, HttpServletRequest request){
-    userService.deleteTask(request,title);
+  @DeleteMapping("/tasks/{task_id}")
+  public ResponseEntity<String> deleteTask(@PathVariable Long task_id, HttpServletRequest request){
+    userService.deleteTask(request,task_id);
     return ResponseEntity.ok("Task was successfully deleted");
   }
 
-  @GetMapping("/task")
-  public ResponseEntity<List<Task>> getTasks(HttpServletRequest request){
-    return ResponseEntity.ok(userService.getTasks(request));
+  @GetMapping("/tasks")
+  public ResponseEntity<List<Task>> getUserTasks(HttpServletRequest request){
+    return ResponseEntity.ok(userService.getUserTasks(request));
   }
 
-  @PatchMapping("/task/{task_id}/{performer_id}")
+  @GetMapping("/tasks/{user_id}")
+  public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable Long user_id){
+    return ResponseEntity.ok(userService.getUserTasksById(user_id));
+  }
+
+  @PatchMapping("/tasks/{task_id}/{performer_id}")
   public ResponseEntity<String> addPerformer(@PathVariable Long task_id,@PathVariable Long performer_id){
     userService.addPerformer(task_id,performer_id);
     return ResponseEntity.ok("Performer was successfully added");
   }
-
-
-
+  @PostMapping("/tasks/{task_id}")
+  public ResponseEntity<String> addComment(@PathVariable Long task_id, @RequestBody CommentRequest commentRequest, HttpServletRequest request){
+    userService.addCommentToTask(task_id,commentRequest.getComment(),request);
+    return ResponseEntity.ok("Comment was successfully added");
+  }
 
 
 

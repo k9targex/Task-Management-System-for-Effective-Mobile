@@ -15,12 +15,11 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByIdAndRole( Long userId, RoleList role);
-    @Query("SELECT u FROM User u WHERE u.role = :role AND :task MEMBER OF u.tasks")
-    Optional<User> findFirstByTasksAndRole(@Param("task") Task task, @Param("role") RoleList role);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.tasks WHERE u.role = :role")
     List<User> findAllWithTasksByRole(@Param("role") RoleList role);
 
+    Optional<User> findUserById(Long userId);
     Optional<User> findUserByUsername(String username);
     Optional<User> findUsersByEmail(String email);
     Boolean existsUserByUsername(String username);

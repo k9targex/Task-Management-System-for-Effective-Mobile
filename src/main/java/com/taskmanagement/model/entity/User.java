@@ -1,9 +1,14 @@
 package com.taskmanagement.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.taskmanagement.model.RoleList;
 import jakarta.persistence.*;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import lombok.*;
 
 @Entity
@@ -13,6 +18,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,26 +34,10 @@ public class User {
   @Enumerated(EnumType.STRING)
   private RoleList role;
 
-  @ManyToMany(
-          cascade = {
-                  CascadeType.DETACH,
-                  CascadeType.REFRESH,
-                  CascadeType.MERGE,
-                  CascadeType.PERSIST
-          }
-  )
-  @JoinTable(
-          name = "user_tasks",
-          joinColumns = @JoinColumn(name = "user_id"),
-          inverseJoinColumns = @JoinColumn(name = "task_id")
-  )
-//  @JsonIgnore
+  @OneToMany(
+      mappedBy = "author",
+      fetch = FetchType.EAGER,
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+  @JsonIgnore
   private List<Task> tasks;
-
-  @PreRemove
-  public void preRemove() {
-    if (RoleList.AUTHOR.equals(this.role)) {
-      tasks.forEach(task -> task.getUsers().remove(this));
-    }
-  }
 }

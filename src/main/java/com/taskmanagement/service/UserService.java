@@ -5,6 +5,7 @@ import com.taskmanagement.dao.UserRepository;
 import com.taskmanagement.exception.PerformerNotFound;
 import com.taskmanagement.exception.TaskAlreadyExistException;
 import com.taskmanagement.exception.TaskNotFoundException;
+import com.taskmanagement.model.Comment;
 import com.taskmanagement.model.RoleList;
 import com.taskmanagement.model.dto.TaskRequest;
 import com.taskmanagement.model.entity.Task;
@@ -13,6 +14,8 @@ import com.taskmanagement.security.JwtCore;
 import com.taskmanagement.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +30,14 @@ import org.springframework.stereotype.Service;
 @CacheConfig(cacheNames = "data")
 public class UserService implements UserDetailsService {
   private static final String USER_NOT_FOUND_MESSAGE = "User with name \"%s\" does not exist";
+  private static final String USER_ID_NOT_FOUND_MESSAGE = "User with id \"%s\" does not exist";
+
   private static final String PERFORMER_ID_NOT_FOUND_MESSAGE =
       "Performer with ID \"%s\" does not exist";
 
   private static final String TASK_NOT_FOUND_MESSAGE = "Task with name \"%s\" does not exist";
-  private static final String TASK_ID_NOT_FOUND_MESSAGE = "Task with ID \"%s\" does not exist";
+  private static final String TASK_ID_NOT_FOUND_MESSAGE =
+      "Task with ID \"%s\" does not exist for this author";
   private static final String TASK_ALREADY_EXIST = "Task with name \"%s\" already exist";
 
   private final UserRepository userRepository;
@@ -58,13 +64,13 @@ public class UserService implements UserDetailsService {
     return UserDetailsImpl.build(user);
   }
 
-  public List<User> getAllUsers() {
-    return userRepository.findAllWithTasksByRole(RoleList.AUTHOR);
-  }
+    public List<User> getAllAuthors() {
+      return userRepository.findAllWithTasksByRole(RoleList.AUTHOR);
+    }
 
   public void createTask(HttpServletRequest request, TaskRequest taskRequest) {
     User user = getUserFromRequest(request);
-    if (taskRepository.findByTitleAndUsers(taskRequest.getTitle(), user).isPresent()) {
+    if (taskRepository.findByTitleAndAuthor(taskRequest.getTitle(), user).isPresent()) {
       throw new TaskAlreadyExistException(
           String.format(TASK_ALREADY_EXIST, taskRequest.getTitle()));
     }
@@ -74,28 +80,38 @@ public class UserService implements UserDetailsService {
             .description(taskRequest.getDescription())
             .status(taskRequest.getStatus())
             .priority(taskRequest.getPriority())
+            .author(user)
             .build();
 
     user.getTasks().add(task);
     userRepository.save(user);
   }
 
-  public void deleteTask(HttpServletRequest request, String title) {
-    User user = getUserFromRequest(request);
+  public void deleteTask(HttpServletRequest request, Long taskId) {
+    User author = getUserFromRequest(request);
+
     Task task =
         taskRepository
-            .findByTitleAndUsers(title, user)
+            .findTaskByIdAndAuthor(taskId, author)
             .orElseThrow(
-                () -> new TaskNotFoundException(String.format(TASK_NOT_FOUND_MESSAGE, title)));
-    user.getTasks().remove(task);
+                () -> new TaskNotFoundException(String.format(TASK_ID_NOT_FOUND_MESSAGE, taskId)));
+
+    author.getTasks().remove(task);
+
+
+    userRepository.save(author);
     taskRepository.delete(task);
-    userRepository.save(user);
   }
 
-  public List<Task> getTasks(HttpServletRequest request) {
-    return taskRepository.findTasksByUsers( getUserFromRequest(request)).get();
+    public List<Task> getUserTasks(HttpServletRequest request) {
+      return taskRepository.findAllTasksByUser( getUserFromRequest(request));
+    }
+  public List<Task> getUserTasksById(Long userID) {
+    return taskRepository.findAllTasksByUser(userRepository.findUserById(userID) .orElseThrow(
+            () ->
+                    new UsernameNotFoundException(
+                            String.format(USER_ID_NOT_FOUND_MESSAGE,userID))));
   }
-
   public void addPerformer(Long taskId, Long performerId) {
     Task task =
         taskRepository
@@ -110,16 +126,30 @@ public class UserService implements UserDetailsService {
                 () ->
                     new PerformerNotFound(
                         String.format(PERFORMER_ID_NOT_FOUND_MESSAGE, performerId)));
-    userRepository
-        .findFirstByTasksAndRole(task, RoleList.PERFORMER)
-        .ifPresent(
-            old -> {
-              old.getTasks().remove(task);
-              userRepository.save(old);
-            });
 
+    Optional.ofNullable(task.getPerformer())
+        .ifPresent(
+            perform -> {
+              perform.getTasks().remove(task);
+              userRepository.save(perform);
+            });
+    task.setPerformer(performer);
     performer.getTasks().add(task);
     userRepository.save(performer);
+    taskRepository.save(task);
+  }
+
+
+  public void addCommentToTask(Long taskId, String commentText,HttpServletRequest request) {
+    Task task = taskRepository.findTaskByIdAndAuthor(taskId,getUserFromRequest(request))
+            .orElseThrow(() -> new TaskNotFoundException(String.format(TASK_ID_NOT_FOUND_MESSAGE,taskId)));
+    String username = getUserFromRequest(request).getUsername();
+    Comment comment = Comment.builder()
+            .text(commentText)
+            .author(username)
+            .timestamp(LocalDateTime.now())
+            .build();
+    task.getComments().add(comment);
     taskRepository.save(task);
   }
 

@@ -33,7 +33,7 @@ public class SecurityController {
     @CrossOrigin(origins = "/", allowCredentials = "true")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/signin")
-    ResponseEntity<String> signin(@RequestBody SignInRequest signInRequest, HttpServletResponse response) {
+    ResponseEntity<String> signin(@Valid @RequestBody SignInRequest signInRequest, HttpServletResponse response) {
         String token = securityService.login(signInRequest);
         setCookie(token,response);
         //for postman

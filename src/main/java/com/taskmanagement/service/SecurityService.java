@@ -53,11 +53,14 @@ public class SecurityService {
       throw new UnauthorizedException(
           String.format("Email \"%s\" already taken (((", signUpRequest.getEmail()));
     }
-    User user = new User();
-    user.setUsername(signUpRequest.getUsername());
-    user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-    user.setEmail(signUpRequest.getEmail());
-    user.setRole(signUpRequest.getRole());
+    User user =
+        User.builder()
+            .username(signUpRequest.getUsername())
+            .password(passwordEncoder.encode(signUpRequest.getPassword()))
+            .email(signUpRequest.getEmail())
+            .role(signUpRequest.getRole())
+            .build();
+
     userRepository.save(user);
     Authentication authentication = null;
     authentication =
@@ -74,8 +77,10 @@ public class SecurityService {
       authentication =
           authenticationManager.authenticate(
               new UsernamePasswordAuthenticationToken(
-                  userRepository.findUsersByEmail(signInRequest.getEmail()).get().getUsername(),
-                  signInRequest.getPassword()));
+                  userRepository
+                      .findUsersByEmail(signInRequest.getEmail())
+                      .orElseThrow(() -> new UnauthorizedException("Incorrect email or password"))
+                              .getUsername(), signInRequest.getPassword()));
     } catch (BadCredentialsException e) {
       throw new UnauthorizedException("Incorrect email or password");
     }

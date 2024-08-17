@@ -1,6 +1,7 @@
 package com.taskmanagement.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.taskmanagement.model.Comment;
 import com.taskmanagement.model.TaskPriority;
 import com.taskmanagement.model.TaskStatus;
 import jakarta.persistence.*;
@@ -25,7 +26,9 @@ public class Task {
 
     private String description;
 
-    private String comments;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "task_comments", joinColumns = @JoinColumn(name = "task_id"))
+    private List<Comment> comments;
 
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
@@ -33,9 +36,13 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskPriority priority;
 
-    @ManyToMany(mappedBy = "tasks", fetch = FetchType.EAGER)
-    @JsonIgnore
-    private List<User> users;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "author_id")
+    private User author;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="performer_id")
+    private User performer;
 
 
 }
