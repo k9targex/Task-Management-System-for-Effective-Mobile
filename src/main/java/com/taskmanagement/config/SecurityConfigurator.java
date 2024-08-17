@@ -1,15 +1,15 @@
 package com.taskmanagement.config;
 
-import java.util.Arrays;
-import java.util.List;
-
 import com.taskmanagement.security.TokenFilter;
 import com.taskmanagement.service.UserService;
+import java.util.Arrays;
+import java.util.List;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -27,84 +27,87 @@ import org.springframework.web.cors.CorsConfiguration;
 @EnableWebSecurity
 @Data
 public class SecurityConfigurator {
-    private TokenFilter tokenFilter;
-    private UserService userService;
-    private MyAuthenticationEntryPoint authenticationEntryPoint;
+  private TokenFilter tokenFilter;
+  private UserService userService;
+  private MyAuthenticationEntryPoint authenticationEntryPoint;
+  private MyAccessDeniedHandler accessDeniedHandler;
 
-    @Autowired
-    public void setMyAuthenticationEntryPoint(MyAuthenticationEntryPoint authenticationEntryPoint) {
-        this.authenticationEntryPoint = authenticationEntryPoint;
-    }
+  @Autowired
+  public void setMyAuthenticationEntryPoint(MyAuthenticationEntryPoint authenticationEntryPoint) {
+    this.authenticationEntryPoint = authenticationEntryPoint;
+  }
 
-    @Autowired
-    public void setUserService(UserService userService) {
-        this.userService = userService;
-    }
+  @Autowired
+  public void setMyAccessDeniedHandler(MyAccessDeniedHandler accessDeniedHandler) {
+    this.accessDeniedHandler = accessDeniedHandler;
+  }
 
-    @Autowired
-    public void setTokenFilter(TokenFilter tokenFilter) {
-        this.tokenFilter = tokenFilter;
-    }
+  @Autowired
+  public void setUserService(UserService userService) {
+    this.userService = userService;
+  }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+  @Autowired
+  public void setTokenFilter(TokenFilter tokenFilter) {
+    this.tokenFilter = tokenFilter;
+  }
 
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 
-    @Bean
-    @Primary
-    public AuthenticationManagerBuilder configureAuthenticationManagerBuilder(
-            AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder.userDetailsService(userService).passwordEncoder(passwordEncoder());
-        return authenticationManagerBuilder;
-    }
+  @Bean
+  public AuthenticationManager authenticationManager(
+      AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    return authenticationConfiguration.getAuthenticationManager();
+  }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Отключение CSRF-защиты. Используются jwt токены.
-        http.csrf(AbstractHttpConfigurer::disable);
-        http.cors(
-                        cors ->
-                                cors.configurationSource(
-                                        request -> {
-                                            CorsConfiguration configuration = new CorsConfiguration();
-                                            configuration.setAllowedOrigins(
-                                                    List.of(
-                                                            "http://localhost:8080")); // Разрешенные источники
-                                            configuration.setAllowedMethods(
-                                                    Arrays.asList("GET", "POST", "PUT", "DELETE")); // Разрешенные методы
-                                            configuration.setAllowedHeaders(
-                                                    Arrays.asList("Authorization", "Content-Type")); // Разрешенные заголовки
-                                            configuration.setAllowCredentials(true); // Разрешение использования куки
-                                            return configuration;
-                                        }))
-                .exceptionHandling(
-                        exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint))
-                .sessionManagement(
-                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(
-                        authorize ->
-                                authorize
-                                        .requestMatchers(
-                                                "/users/getPlayers/**",
-                                                "users/deletePlayer",
-                                                "api/v1/faceit/info",
-                                                "/users/addPlayer",
-                                                "auth/secure",
-                                                "users/getUserByName",
-                                                "faceit/info")
-                                        .hasAnyRole("ADMIN", "USER")
-                                        .requestMatchers("/users/**", "/country/**")
-                                        .hasRole("ADMIN")
-                                        .anyRequest()
-                                        .permitAll())
-                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
-    }
+  @Bean
+  @Primary
+  public AuthenticationManagerBuilder configureAuthenticationManagerBuilder(
+      AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+    authenticationManagerBuilder.userDetailsService(userService).passwordEncoder(passwordEncoder());
+    return authenticationManagerBuilder;
+  }
+
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    // Отключение CSRF-защиты. Используются jwt токены.
+    http.csrf(AbstractHttpConfigurer::disable);
+    http.cors(
+            cors ->
+                cors.configurationSource(
+                    request -> {
+                      CorsConfiguration configuration = new CorsConfiguration();
+                      configuration.setAllowedOrigins(
+                          List.of("http://localhost:8080")); // Разрешенные источники
+                      configuration.setAllowedMethods(
+                          Arrays.asList("GET", "POST", "PUT", "DELETE")); // Разрешенные методы
+                      configuration.setAllowedHeaders(
+                          Arrays.asList("Authorization", "Content-Type")); // Разрешенные заголовки
+                      configuration.setAllowCredentials(true); // Разрешение использования куки
+                      return configuration;
+                    }))
+        .exceptionHandling(
+            exceptions ->
+                exceptions
+                    .authenticationEntryPoint(authenticationEntryPoint) // для обработки 401
+                    .accessDeniedHandler(accessDeniedHandler)) // для обработки 403
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            authorize ->
+                authorize
+                    .requestMatchers(HttpMethod.GET, "/users")
+                    .hasAuthority("AUTHOR")
+                    .requestMatchers(HttpMethod.POST, "/users/task")
+                    .hasAuthority("AUTHOR")
+                    .requestMatchers(HttpMethod.DELETE, "/users/task/{title}")
+                    .hasAuthority("AUTHOR")
+                    .anyRequest()
+                    .permitAll())
+        .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
+    return http.build();
+  }
 }

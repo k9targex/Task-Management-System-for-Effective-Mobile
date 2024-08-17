@@ -23,15 +23,24 @@ public class User {
 
   private String email;
 
-  private String password;
+  @JsonIgnore private String password;
 
   @Enumerated(EnumType.STRING)
   private RoleList role;
 
-  @OneToMany(
-      mappedBy = "user",
-      fetch = FetchType.EAGER,
-      cascade = {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.PERSIST,CascadeType.REMOVE})
+  @ManyToMany(
+          cascade = {
+                  CascadeType.DETACH,
+                  CascadeType.REFRESH,
+                  CascadeType.MERGE,
+                  CascadeType.PERSIST
+          }
+  )
+  @JoinTable(
+          name = "user_tasks",
+          joinColumns = @JoinColumn(name = "user_id"),
+          inverseJoinColumns = @JoinColumn(name = "task_id")
+  )
   @JsonIgnore
   private List<Task> tasks;
 }

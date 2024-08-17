@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 @RestControllerAdvice
 @Slf4j
 public class ControllerExceptionHandler {
-    private static final  String ERROR_404 = "Error 400: Bad request - ";
+    private static final  String ERROR_400 = "Error 400: Bad request - ";
 
     /** Обработчик исключения InsufficientAuthenticationException. */
     @ExceptionHandler({InsufficientAuthenticationException.class})
@@ -57,7 +57,7 @@ public class ControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseError handleIllegalArgumentException(
             RuntimeException ex, WebRequest request) {
-        String errorMessage = ERROR_404 + ex.getMessage();
+        String errorMessage = ERROR_400 + ex.getMessage();
         log.error(errorMessage);
         return new ResponseError(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
@@ -66,24 +66,27 @@ public class ControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseError handleNullEnumArgument(
             MethodArgumentNotValidException ex, WebRequest request) {
-        String errorMessage = ERROR_404 + ex.getBindingResult().getFieldError().getDefaultMessage();
+        String errorMessage = ERROR_400 + ex.getBindingResult().getFieldError().getDefaultMessage();
         log.error(errorMessage);
         return new ResponseError(HttpStatus.BAD_REQUEST, ex.getBindingResult().getFieldError().getDefaultMessage());
     }
-    /** Обработчик исключения MethodArgumentNotValidException. */
+    /** Обработчик исключения HttpMessageNotReadableException. */
     @ExceptionHandler({HttpMessageNotReadableException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseError handleIllegalEnumArgument(
             HttpMessageNotReadableException ex, WebRequest request) {
-        String errorMessage = ERROR_404 + ex.getMessage();
+        String errorMessage = ERROR_400 + ex.getMessage();
         Pattern pattern = Pattern.compile("\\[(.*?)\\]");
         Matcher matcher = pattern.matcher(errorMessage);
-        matcher.find();
-        String acceptedValues = matcher.group(0);
+        String acceptedValues;
+    if (matcher.find()) {
+         acceptedValues = matcher.group(0);
+    }
+    else
+        acceptedValues = " Parameter cannot be EMPTY";
 
-
-        log.error(errorMessage);
-        return new ResponseError(HttpStatus.BAD_REQUEST, "Invalid request format:" + acceptedValues );
+    log.error(errorMessage);
+    return new ResponseError(HttpStatus.BAD_REQUEST, "Invalid request format:" + acceptedValues );
     }
 
     /** Обработчик исключения HttpRequestMethodNotSupportedException. */
@@ -120,5 +123,22 @@ public class ControllerExceptionHandler {
         String errorMessage = "Error 404: Not Found - " + ex.getMessage();
         log.error(errorMessage);
         return new ResponseError(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    // Обработчик для стандартной ошибки AccessDeniedException
+    @ExceptionHandler({org.springframework.security.access.AccessDeniedException.class})
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ResponseError handleSpringAccessDeniedException(org.springframework.security.access.AccessDeniedException ex, WebRequest request) {
+        String errorMessage = "Error 403: Forbidden - " + ex.getMessage();
+        log.error(errorMessage);
+        return new ResponseError(HttpStatus.FORBIDDEN, ex.getMessage()+ " (Be sure you have the required role for this resource)");
+    }
+
+    @ExceptionHandler({TaskAlreadyExistException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseError handleResponseException(Exception ex, WebRequest request) {
+        String errorMessage = "Error 409: Conflict - " + ex.getMessage();
+        log.error(errorMessage);
+        return new ResponseError(HttpStatus.CONFLICT, ex.getMessage());
     }
 }

@@ -6,6 +6,8 @@ import com.taskmanagement.model.TaskStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "tasks")
 @Getter
@@ -31,10 +33,9 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskPriority priority;
 
+    @ManyToMany(mappedBy = "tasks", fetch = FetchType.EAGER)
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
-    private User user;
+    private List<User> users;
 
 
 }

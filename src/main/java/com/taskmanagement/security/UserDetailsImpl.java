@@ -32,7 +32,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return AuthorityUtils.createAuthorityList(getRole().toString());
+        return AuthorityUtils.createAuthorityList( getRole().toString());
     }
 
     @Override
