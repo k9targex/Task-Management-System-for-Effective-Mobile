@@ -5,9 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.taskmanagement.model.RoleList;
 import jakarta.persistence.*;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 
 import lombok.*;
 

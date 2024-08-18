@@ -72,7 +72,7 @@ public class SecurityService {
               return jwtCore.generateToken(authentication);
             })
             .orElseThrow(() -> {
-              if (userRepository.existsUserByUsername(signUpRequest.getUsername())) {
+              if (userRepository.existsUserByUsername(signUpRequest.getUsername()).booleanValue()) {
                 return new UnauthorizedException(USER_ALREADY_TAKEN);
               } else {
                 return new UnauthorizedException(EMAIL_ALREADY_TAKEN);
