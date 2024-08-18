@@ -23,6 +23,11 @@ public class SecurityService {
   private PasswordEncoder passwordEncoder;
   private AuthenticationManager authenticationManager;
   private JwtCore jwtCore;
+  private static final String USER_ALREADY_TAKEN = "This name already taken";
+
+  private static final String EMAIL_ALREADY_TAKEN = "This name already taken";
+  private static final String INCORRECT_CREDENTIALS ="Incorrect email or password";
+
 
   @Autowired
   public void setUserRepository(UserRepository userRepository) {
@@ -47,11 +52,11 @@ public class SecurityService {
   public String register(SignUpRequest signUpRequest) {
     if (userRepository.existsUserByUsername(signUpRequest.getUsername()).booleanValue()) {
       throw new UnauthorizedException(
-          String.format("Name \"%s\" already taken (((", signUpRequest.getUsername()));
+              USER_ALREADY_TAKEN);
     }
     if (userRepository.existsUserByEmail(signUpRequest.getEmail()).booleanValue()) {
       throw new UnauthorizedException(
-          String.format("Email \"%s\" already taken (((", signUpRequest.getEmail()));
+              EMAIL_ALREADY_TAKEN);
     }
     User user =
         User.builder()
@@ -79,10 +84,10 @@ public class SecurityService {
               new UsernamePasswordAuthenticationToken(
                   userRepository
                       .findUsersByEmail(signInRequest.getEmail())
-                      .orElseThrow(() -> new UnauthorizedException("Incorrect email or password"))
+                      .orElseThrow(() -> new UnauthorizedException(INCORRECT_CREDENTIALS))
                               .getUsername(), signInRequest.getPassword()));
     } catch (BadCredentialsException e) {
-      throw new UnauthorizedException("Incorrect email or password");
+      throw new UnauthorizedException(INCORRECT_CREDENTIALS);
     }
     SecurityContextHolder.getContext().setAuthentication(authentication);
     return (jwtCore.generateToken(authentication));

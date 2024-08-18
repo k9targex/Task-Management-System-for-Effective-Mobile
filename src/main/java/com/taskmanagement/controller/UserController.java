@@ -60,7 +60,7 @@ public class UserController {
     return ResponseEntity.ok("Performer was successfully added");
   }
   @PostMapping("/tasks/comments/{taskId}")
-  public ResponseEntity<String> addComment(@PathVariable Long taskId, @RequestBody CommentRequest commentRequest, HttpServletRequest request){
+  public ResponseEntity<String> addComment( @PathVariable Long taskId, @Valid @RequestBody CommentRequest commentRequest, HttpServletRequest request){
     userService.addCommentToTask(taskId,commentRequest.getComment(),request);
     return ResponseEntity.ok("Comment was successfully added");
   }
