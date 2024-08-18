@@ -5,11 +5,13 @@ import com.taskmanagement.model.TaskStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class TaskRequest {
     @NotBlank(message = "Title is required")
     private String title;

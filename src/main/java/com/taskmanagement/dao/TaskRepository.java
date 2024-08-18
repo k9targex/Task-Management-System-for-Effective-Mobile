@@ -39,19 +39,19 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
 
 
-  @EntityGraph(attributePaths = {"comments"})
+//  @EntityGraph(attributePaths = {"comments"})
   @Query("SELECT t FROM Task t WHERE (t.author = :user OR t.performer = :user)")
   Page<Task> findAllTasksByUser(@Param("user") User user, Pageable pageable);
 
-  @EntityGraph(attributePaths = {"comments"})
+//  @EntityGraph(attributePaths = {"comments"})
   @Query("SELECT t FROM Task t WHERE (t.author = :user OR t.performer = :user) AND t.status = :status")
   Page<Task> findAllTasksByUserAndStatus(@Param("user") User user, @Param("status") TaskStatus status, Pageable pageable);
 
-  @EntityGraph(attributePaths = {"comments"})
+//  @EntityGraph(attributePaths = {"comments"})
   @Query("SELECT t FROM Task t WHERE (t.author = :user OR t.performer = :user) AND t.priority = :priority")
   Page<Task> findAllTasksByUserAndPriority(@Param("user") User user, @Param("priority") TaskPriority priority, Pageable pageable);
 
-  @EntityGraph(attributePaths = {"comments"})
+//  @EntityGraph(attributePaths = {"comments"})
   @Query("SELECT t FROM Task t WHERE (t.author = :user OR t.performer = :user) AND t.status = :status AND t.priority = :priority")
   Page<Task> findAllTasksByUserAndStatusAndPriority(@Param("user") User user, @Param("status") TaskStatus status, @Param("priority") TaskPriority priority, Pageable pageable);
 

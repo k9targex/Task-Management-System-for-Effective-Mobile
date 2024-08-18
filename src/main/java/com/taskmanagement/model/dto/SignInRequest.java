@@ -4,8 +4,11 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Builder
 public class SignInRequest {
     @NotBlank(message = "Email is required")
@@ -13,4 +16,6 @@ public class SignInRequest {
     private String email;
 
     private String password;
+
+
 }

@@ -16,6 +16,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @Transactional
 public class SecurityService {
@@ -25,7 +27,7 @@ public class SecurityService {
   private JwtCore jwtCore;
   private static final String USER_ALREADY_TAKEN = "This name already taken";
 
-  private static final String EMAIL_ALREADY_TAKEN = "This name already taken";
+  private static final String EMAIL_ALREADY_TAKEN = "This email already taken";
   private static final String INCORRECT_CREDENTIALS ="Incorrect email or password";
 
 
@@ -50,30 +52,32 @@ public class SecurityService {
   }
 
   public String register(SignUpRequest signUpRequest) {
-    if (userRepository.existsUserByUsername(signUpRequest.getUsername()).booleanValue()) {
-      throw new UnauthorizedException(
-              USER_ALREADY_TAKEN);
-    }
-    if (userRepository.existsUserByEmail(signUpRequest.getEmail()).booleanValue()) {
-      throw new UnauthorizedException(
-              EMAIL_ALREADY_TAKEN);
-    }
-    User user =
-        User.builder()
-            .username(signUpRequest.getUsername())
-            .password(passwordEncoder.encode(signUpRequest.getPassword()))
-            .email(signUpRequest.getEmail())
-            .role(signUpRequest.getRole())
-            .build();
+    return Optional.of(signUpRequest)
+            .filter(request -> !userRepository.existsUserByUsername(request.getUsername()))
+            .filter(request -> !userRepository.existsUserByEmail(request.getEmail()))
+            .map(request -> {
+              User user = User.builder()
+                      .username(request.getUsername())
+                      .password(passwordEncoder.encode(request.getPassword()))
+                      .email(request.getEmail())
+                      .role(request.getRole())
+                      .build();
 
-    userRepository.save(user);
-    Authentication authentication = null;
-    authentication =
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                signUpRequest.getUsername(), signUpRequest.getPassword()));
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-    return jwtCore.generateToken(authentication);
+              userRepository.save(user);
+              Authentication authentication = authenticationManager.authenticate(
+                      new UsernamePasswordAuthenticationToken(
+                              request.getUsername(), request.getPassword()));
+
+              SecurityContextHolder.getContext().setAuthentication(authentication);
+              return jwtCore.generateToken(authentication);
+            })
+            .orElseThrow(() -> {
+              if (userRepository.existsUserByUsername(signUpRequest.getUsername())) {
+                return new UnauthorizedException(USER_ALREADY_TAKEN);
+              } else {
+                return new UnauthorizedException(EMAIL_ALREADY_TAKEN);
+              }
+            });
   }
 
   public String login(SignInRequest signInRequest) {

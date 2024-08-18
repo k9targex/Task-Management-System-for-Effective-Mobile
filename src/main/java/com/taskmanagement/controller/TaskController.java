@@ -2,8 +2,6 @@ package com.taskmanagement.controller;
 
 import com.taskmanagement.model.entity.Task;
 import com.taskmanagement.service.TaskService;
-import com.taskmanagement.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

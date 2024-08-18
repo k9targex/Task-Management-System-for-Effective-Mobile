@@ -11,10 +11,8 @@ import com.taskmanagement.model.entity.Task;
 import com.taskmanagement.model.entity.User;
 import com.taskmanagement.service.UserService;
 import java.util.List;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,11 +27,11 @@ public class UserController {
   private final UserService userService;
 
 
-  @Autowired
+
+
   public UserController(UserService userService) {
     this.userService = userService;
   }
-
 
   @GetMapping()
   public ResponseEntity<List<User>> getAllAuthors() {
@@ -54,10 +52,6 @@ public class UserController {
   public ResponseEntity<List<Task>> getUserTasks(HttpServletRequest request){
     return ResponseEntity.ok(userService.getUserTasks(request));
   }
-//  @GetMapping("/tasks/user/{userId}")
-//  public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable Long userId){
-//    return ResponseEntity.ok(userService.getUserTasksById(userId));
-//  }
 @GetMapping("/tasks/user/{userId}")
 public ResponseEntity<Page<Task>> getTasksByUserId(
         @PathVariable Long userId,

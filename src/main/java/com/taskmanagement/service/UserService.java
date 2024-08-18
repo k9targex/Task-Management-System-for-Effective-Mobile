@@ -25,6 +25,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,7 +37,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
-@CacheConfig(cacheNames = "data")
+@CacheConfig(cacheNames = "tasks")
 public class UserService implements UserDetailsService {
 
   private static final String USER_NOT_FOUND_MESSAGE = "User with name \"%s\" does not exist";
@@ -77,6 +80,7 @@ public class UserService implements UserDetailsService {
     return userRepository.findAllWithTasksByRole(RoleList.AUTHOR);
   }
 
+  @CachePut(key = "#taskRequest.title")
   public void createTask(HttpServletRequest request, TaskRequest taskRequest) {
     User user = getUserFromRequest(request);
     checkTaskExistence(taskRequest.getTitle(), user);
@@ -98,6 +102,7 @@ public class UserService implements UserDetailsService {
         .ifPresent(comment -> addCommentToTask(task.getId(), comment, request));
   }
 
+  @CacheEvict(key = "#taskId")
   public void deleteTask(HttpServletRequest request, Long taskId) {
     Task task = findTaskByAuthor(request, taskId);
     task.getAuthor().getTasks().remove(task);
@@ -105,15 +110,12 @@ public class UserService implements UserDetailsService {
     taskRepository.delete(task);
   }
 
+  @Cacheable(key = "#request.userId")
   public List<Task> getUserTasks(HttpServletRequest request) {
     return taskRepository.findAllTasksByUser(getUserFromRequest(request));
   }
 
-  public List<Task> getUserTasksById(Long userId) {
-    User user = findUserById(userId);
-    return taskRepository.findAllTasksByUser(user);
-  }
-
+  @CachePut(key = "#taskId")
   public void addPerformer(Long taskId, Long performerId) {
     Task task = findTaskById(taskId);
     User performer = findPerformerById(performerId);
@@ -131,6 +133,7 @@ public class UserService implements UserDetailsService {
     taskRepository.save(task);
   }
 
+  @CachePut(key = "#taskId")
   public void addCommentToTask(Long taskId, String commentText, HttpServletRequest request) {
     Task task =
         taskRepository
@@ -146,6 +149,7 @@ public class UserService implements UserDetailsService {
     taskRepository.save(task);
   }
 
+  @CachePut(key = "#taskId")
   public void updateTask(Long taskId, TaskUpdateRequest updateRequest, HttpServletRequest request) {
     Task task = findTaskByAuthor(request, taskId);
     checkTaskExistence(updateRequest.getTitle(), task.getAuthor());
@@ -158,6 +162,7 @@ public class UserService implements UserDetailsService {
     taskRepository.save(task);
   }
 
+  @CachePut(key = "#taskId")
   public void updateStatus(
       UpdateStatusRequest updateStatusRequest, Long taskId, HttpServletRequest request) {
     Task task = findTaskByPerformer(request, taskId);
@@ -165,29 +170,41 @@ public class UserService implements UserDetailsService {
     taskRepository.save(task);
   }
 
+  @Cacheable(key = "#taskId")
   public List<Comment> getCommentsByTaskId(Long taskId) {
     findTaskById(taskId);
     return taskRepository.findCommentsByTaskId(taskId);
   }
 
-  public Page<Task> getUserTasksByIdWithFilters(Long userId, Pageable pageable, TaskStatus status, TaskPriority priority) {
-    User user = userRepository
+  @Cacheable(key = "#userId")
+  public Page<Task> getUserTasksByIdWithFilters(
+      Long userId, Pageable pageable, TaskStatus status, TaskPriority priority) {
+    User user =
+        userRepository
             .findUserById(userId)
-            .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_ID_NOT_FOUND_MESSAGE, userId)));
+            .orElseThrow(
+                () ->
+                    new UsernameNotFoundException(
+                        String.format(USER_ID_NOT_FOUND_MESSAGE, userId)));
 
     return Optional.ofNullable(status)
-            .flatMap(s -> Optional.ofNullable(priority)
-                    .map(p -> taskRepository.findAllTasksByUserAndStatusAndPriority(user, s, p, pageable)))
-            .orElseGet(() ->
-                    Optional.ofNullable(status)
-                            .map(s -> taskRepository.findAllTasksByUserAndStatus(user, s, pageable))
-                            .orElseGet(() ->
-                                    Optional.ofNullable(priority)
-                                            .map(p -> taskRepository.findAllTasksByUserAndPriority(user, p, pageable))
-                                            .orElseGet(() -> taskRepository.findAllTasksByUser(user, pageable))
-                            )
-            );
-  }
+        .flatMap(
+            s ->
+                Optional.ofNullable(priority)
+                    .map(
+                        p ->
+                            taskRepository.findAllTasksByUserAndStatusAndPriority(
+                                user, s, p, pageable)))
+        .orElseGet(
+            () ->
+                Optional.ofNullable(status)
+                    .map(s -> taskRepository.findAllTasksByUserAndStatus(user, s, pageable))
+                    .orElseGet(
+                        () -> Optional.ofNullable(priority)
+                                .map(p -> taskRepository.findAllTasksByUserAndPriority(user, p, pageable))
+                                .orElseGet(
+                                    () -> taskRepository.findAllTasksByUser(user, pageable))));}
+
   // Helper methods
 
   private User getUserFromRequest(HttpServletRequest request) {
@@ -197,8 +214,7 @@ public class UserService implements UserDetailsService {
         .orElseThrow(
             () ->
                 new UsernameNotFoundException(
-                    String.format(USER_NOT_FOUND_MESSAGE, jwtCore.getNameFromJwt(token))));
-  }
+                    String.format(USER_NOT_FOUND_MESSAGE, jwtCore.getNameFromJwt(token))));}
 
   private void checkTaskExistence(String title, User user) {
     if (taskRepository.existsByTitleAndAuthor(title, user)) {
@@ -218,8 +234,7 @@ public class UserService implements UserDetailsService {
     return taskRepository
         .findTaskByIdAndAuthor(taskId, author)
         .orElseThrow(
-            () -> new TaskNotFoundException(String.format(TASK_ID_NOT_FOUND_MESSAGE, taskId)));
-  }
+            () -> new TaskNotFoundException(String.format(TASK_ID_NOT_FOUND_MESSAGE, taskId)));}
 
   private Task findTaskByPerformer(HttpServletRequest request, Long taskId) {
     User performer = getUserFromRequest(request);
@@ -231,13 +246,6 @@ public class UserService implements UserDetailsService {
                     String.format(TASK_ID_NOT_FOUND_MESSAGE_FOR_PERFORMER, taskId)));
   }
 
-  private User findUserById(Long userId) {
-    return userRepository
-        .findUserById(userId)
-        .orElseThrow(
-            () -> new UsernameNotFoundException(String.format(USER_ID_NOT_FOUND_MESSAGE, userId)));
-  }
-
   private User findPerformerById(Long performerId) {
     return userRepository
         .findByIdAndRole(performerId, RoleList.PERFORMER)
@@ -247,6 +255,6 @@ public class UserService implements UserDetailsService {
   }
 
   private <T> void updateIfPresent(T value, Consumer<T> setter) {
-    Optional.ofNullable(value).ifPresent(setter);
-  }
+    Optional.ofNullable(value).ifPresent(setter);}
+
 }

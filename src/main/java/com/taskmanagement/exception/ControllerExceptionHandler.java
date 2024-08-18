@@ -74,8 +74,9 @@ public class ControllerExceptionHandler {
         return new ResponseError(HttpStatus.BAD_REQUEST, ex.getBindingResult().getFieldError().getDefaultMessage());
     }
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseError handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        String errorMessage = ERROR_400 + "Invalid parameter format. Only numeric values are allowed.";
+        String errorMessage = ERROR_400 + "Invalid parameter format.";
         log.error(errorMessage);
         return new ResponseError(HttpStatus.BAD_REQUEST, errorMessage);
 
