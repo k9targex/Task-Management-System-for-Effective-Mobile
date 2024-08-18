@@ -7,6 +7,7 @@ import com.taskmanagement.model.dto.SignUpRequest;
 import com.taskmanagement.model.entity.User;
 import com.taskmanagement.security.JwtCore;
 import jakarta.transaction.Transactional;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -15,8 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -28,8 +27,7 @@ public class SecurityService {
   private static final String USER_ALREADY_TAKEN = "This name already taken";
 
   private static final String EMAIL_ALREADY_TAKEN = "This email already taken";
-  private static final String INCORRECT_CREDENTIALS ="Incorrect email or password";
-
+  private static final String INCORRECT_CREDENTIALS = "Incorrect email or password";
 
   @Autowired
   public void setUserRepository(UserRepository userRepository) {
@@ -53,10 +51,12 @@ public class SecurityService {
 
   public String register(SignUpRequest signUpRequest) {
     return Optional.of(signUpRequest)
-            .filter(request -> !userRepository.existsUserByUsername(request.getUsername()))
-            .filter(request -> !userRepository.existsUserByEmail(request.getEmail()))
-            .map(request -> {
-              User user = User.builder()
+        .filter(request -> !userRepository.existsUserByUsername(request.getUsername()))
+        .filter(request -> !userRepository.existsUserByEmail(request.getEmail()))
+        .map(
+            request -> {
+              User user =
+                  User.builder()
                       .username(request.getUsername())
                       .password(passwordEncoder.encode(request.getPassword()))
                       .email(request.getEmail())
@@ -64,14 +64,16 @@ public class SecurityService {
                       .build();
 
               userRepository.save(user);
-              Authentication authentication = authenticationManager.authenticate(
+              Authentication authentication =
+                  authenticationManager.authenticate(
                       new UsernamePasswordAuthenticationToken(
-                              request.getUsername(), request.getPassword()));
+                          request.getUsername(), request.getPassword()));
 
               SecurityContextHolder.getContext().setAuthentication(authentication);
               return jwtCore.generateToken(authentication);
             })
-            .orElseThrow(() -> {
+        .orElseThrow(
+            () -> {
               if (userRepository.existsUserByUsername(signUpRequest.getUsername()).booleanValue()) {
                 return new UnauthorizedException(USER_ALREADY_TAKEN);
               } else {
@@ -89,7 +91,8 @@ public class SecurityService {
                   userRepository
                       .findUsersByEmail(signInRequest.getEmail())
                       .orElseThrow(() -> new UnauthorizedException(INCORRECT_CREDENTIALS))
-                              .getUsername(), signInRequest.getPassword()));
+                      .getUsername(),
+                  signInRequest.getPassword()));
     } catch (BadCredentialsException e) {
       throw new UnauthorizedException(INCORRECT_CREDENTIALS);
     }

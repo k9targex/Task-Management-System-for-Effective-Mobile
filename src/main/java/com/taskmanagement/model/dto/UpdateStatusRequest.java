@@ -10,6 +10,6 @@ import lombok.Setter;
 @Setter
 @Builder
 public class UpdateStatusRequest {
-    @NotNull(message = "Status is required")
-    private TaskStatus status;
+  @NotNull(message = "Status is required")
+  private TaskStatus status;
 }

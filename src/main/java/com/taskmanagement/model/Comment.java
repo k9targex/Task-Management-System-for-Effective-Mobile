@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 @Builder
 public class Comment {
 
-    private String text;
+  private String text;
 
-    private String author;
+  private String author;
 
-    private LocalDateTime timestamp;
+  private LocalDateTime timestamp;
 }

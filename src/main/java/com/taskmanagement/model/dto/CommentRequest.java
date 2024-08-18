@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CommentRequest {
-    @Size(max=100, message = ("Comment is to big"))
-    @NotBlank(message = "Comment is required")
-    private String comment;
+  @Size(max = 100, message = ("Comment is to big"))
+  @NotBlank(message = "Comment is required")
+  private String comment;
 }

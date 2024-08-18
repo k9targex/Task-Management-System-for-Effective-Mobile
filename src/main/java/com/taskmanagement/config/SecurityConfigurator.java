@@ -23,7 +23,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
-
 @Configuration
 @EnableWebSecurity
 @Data
@@ -100,37 +99,38 @@ public class SecurityConfigurator {
         .authorizeHttpRequests(
             authorize ->
                 authorize
-                        // Доступ для всех авторизованных пользователей
-                        .requestMatchers(HttpMethod.GET, "/users")
-                        .hasAnyAuthority("AUTHOR", "PERFORMER")
-                        .requestMatchers(HttpMethod.GET, "/users/tasks")
-                        .hasAnyAuthority("AUTHOR", "PERFORMER")
-                        .requestMatchers(HttpMethod.GET, "/users/tasks/user/{userId}")
-                        .hasAnyAuthority("AUTHOR", "PERFORMER")
-                        .requestMatchers(HttpMethod.POST, "/users/tasks/comments/{taskId}")
-                        .hasAnyAuthority("AUTHOR", "PERFORMER")
-                        .requestMatchers(HttpMethod.GET, "/users/tasks/comments/{taskId}")
-                        .hasAnyAuthority("AUTHOR", "PERFORMER")
-                        .requestMatchers(HttpMethod.GET, "/tasks")
-                        .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    // Доступ для всех авторизованных пользователей
+                    .requestMatchers(HttpMethod.GET, "/users")
+                    .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    .requestMatchers(HttpMethod.GET, "/users/tasks")
+                    .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    .requestMatchers(HttpMethod.GET, "/users/tasks/user/{userId}")
+                    .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    .requestMatchers(HttpMethod.POST, "/users/tasks/comments/{taskId}")
+                    .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    .requestMatchers(HttpMethod.GET, "/users/tasks/comments/{taskId}")
+                    .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    .requestMatchers(HttpMethod.GET, "/tasks")
+                    .hasAnyAuthority("AUTHOR", "PERFORMER")
 
-                        // Доступ для AUTHOR
-                        .requestMatchers(HttpMethod.POST, "/users/tasks")
-                        .hasAuthority("AUTHOR")
-                        .requestMatchers(HttpMethod.PATCH, "/users/tasks/edit/{taskId}")
-                        .hasAuthority("AUTHOR")
-                        .requestMatchers(HttpMethod.POST, "/users/tasks/{taskId}/performers/{performerId}")
-                        .hasAuthority("AUTHOR")
-                        .requestMatchers(HttpMethod.DELETE, "/users/tasks/{taskId}")
-                        .hasAuthority("AUTHOR")
+                    // Доступ для AUTHOR
+                    .requestMatchers(HttpMethod.POST, "/users/tasks")
+                    .hasAuthority("AUTHOR")
+                    .requestMatchers(HttpMethod.PATCH, "/users/tasks/edit/{taskId}")
+                    .hasAuthority("AUTHOR")
+                    .requestMatchers(
+                        HttpMethod.POST, "/users/tasks/{taskId}/performers/{performerId}")
+                    .hasAuthority("AUTHOR")
+                    .requestMatchers(HttpMethod.DELETE, "/users/tasks/{taskId}")
+                    .hasAuthority("AUTHOR")
 
-                        // Доступ для PERFORMER
-                        .requestMatchers(HttpMethod.PATCH, "/users/tasks/status/{taskId}")
-                        .hasAuthority("PERFORMER")
+                    // Доступ для PERFORMER
+                    .requestMatchers(HttpMethod.PATCH, "/users/tasks/status/{taskId}")
+                    .hasAuthority("PERFORMER")
 
-                        // Разрешить все остальные запросы
-                        .anyRequest()
-                        .permitAll())
+                    // Разрешить все остальные запросы
+                    .anyRequest()
+                    .permitAll())
         .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }

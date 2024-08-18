@@ -200,10 +200,15 @@ public class UserService implements UserDetailsService {
                 Optional.ofNullable(status)
                     .map(s -> taskRepository.findAllTasksByUserAndStatus(user, s, pageable))
                     .orElseGet(
-                        () -> Optional.ofNullable(priority)
-                                .map(p -> taskRepository.findAllTasksByUserAndPriority(user, p, pageable))
+                        () ->
+                            Optional.ofNullable(priority)
+                                .map(
+                                    p ->
+                                        taskRepository.findAllTasksByUserAndPriority(
+                                            user, p, pageable))
                                 .orElseGet(
-                                    () -> taskRepository.findAllTasksByUser(user, pageable))));}
+                                    () -> taskRepository.findAllTasksByUser(user, pageable))));
+  }
 
   // Helper methods
 
@@ -214,7 +219,8 @@ public class UserService implements UserDetailsService {
         .orElseThrow(
             () ->
                 new UsernameNotFoundException(
-                    String.format(USER_NOT_FOUND_MESSAGE, jwtCore.getNameFromJwt(token))));}
+                    String.format(USER_NOT_FOUND_MESSAGE, jwtCore.getNameFromJwt(token))));
+  }
 
   private void checkTaskExistence(String title, User user) {
     if (taskRepository.existsByTitleAndAuthor(title, user)) {
@@ -234,7 +240,8 @@ public class UserService implements UserDetailsService {
     return taskRepository
         .findTaskByIdAndAuthor(taskId, author)
         .orElseThrow(
-            () -> new TaskNotFoundException(String.format(TASK_ID_NOT_FOUND_MESSAGE, taskId)));}
+            () -> new TaskNotFoundException(String.format(TASK_ID_NOT_FOUND_MESSAGE, taskId)));
+  }
 
   private Task findTaskByPerformer(HttpServletRequest request, Long taskId) {
     User performer = getUserFromRequest(request);
@@ -255,6 +262,6 @@ public class UserService implements UserDetailsService {
   }
 
   private <T> void updateIfPresent(T value, Consumer<T> setter) {
-    Optional.ofNullable(value).ifPresent(setter);}
-
+    Optional.ofNullable(value).ifPresent(setter);
+  }
 }
