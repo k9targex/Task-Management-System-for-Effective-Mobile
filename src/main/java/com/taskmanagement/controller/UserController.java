@@ -1,6 +1,8 @@
 package com.taskmanagement.controller;
 
 import com.taskmanagement.model.Comment;
+import com.taskmanagement.model.TaskPriority;
+import com.taskmanagement.model.TaskStatus;
 import com.taskmanagement.model.dto.CommentRequest;
 import com.taskmanagement.model.dto.TaskRequest;
 import com.taskmanagement.model.dto.TaskUpdateRequest;
@@ -13,6 +15,9 @@ import java.util.List;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,10 +54,21 @@ public class UserController {
   public ResponseEntity<List<Task>> getUserTasks(HttpServletRequest request){
     return ResponseEntity.ok(userService.getUserTasks(request));
   }
-  @GetMapping("/tasks/user/{userId}")
-  public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable Long userId){
-    return ResponseEntity.ok(userService.getUserTasksById(userId));
-  }
+//  @GetMapping("/tasks/user/{userId}")
+//  public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable Long userId){
+//    return ResponseEntity.ok(userService.getUserTasksById(userId));
+//  }
+@GetMapping("/tasks/user/{userId}")
+public ResponseEntity<Page<Task>> getTasksByUserId(
+        @PathVariable Long userId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) TaskStatus status,
+        @RequestParam(required = false) TaskPriority priority) {
+
+  Pageable pageable = PageRequest.of(page, size);
+  return ResponseEntity.ok(userService.getUserTasksByIdWithFilters(userId, pageable, status, priority));
+}
 
   @PostMapping("/tasks/{taskId}/performers/{performerId}")
   public ResponseEntity<String> addPerformer(@PathVariable Long taskId,@PathVariable Long performerId){
