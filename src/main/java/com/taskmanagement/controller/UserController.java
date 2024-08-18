@@ -1,10 +1,12 @@
 package com.taskmanagement.controller;
 
+import com.taskmanagement.model.Comment;
 import com.taskmanagement.model.dto.CommentRequest;
 import com.taskmanagement.model.dto.TaskRequest;
+import com.taskmanagement.model.dto.TaskUpdateRequest;
+import com.taskmanagement.model.dto.UpdateStatusRequest;
 import com.taskmanagement.model.entity.Task;
 import com.taskmanagement.model.entity.User;
-import com.taskmanagement.security.JwtCore;
 import com.taskmanagement.service.UserService;
 import java.util.List;
 
@@ -20,17 +22,13 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
   private final UserService userService;
-  private JwtCore jwtCore;
+
 
   @Autowired
   public UserController(UserService userService) {
     this.userService = userService;
   }
 
-  @Autowired
-  public void setJwtCore(JwtCore jwtCore) {
-    this.jwtCore = jwtCore;
-  }
 
   @GetMapping()
   public ResponseEntity<List<User>> getAllAuthors() {
@@ -41,9 +39,9 @@ public class UserController {
       userService.createTask(request,taskRequest);
       return ResponseEntity.ok("Task was successfully added");
   }
-  @DeleteMapping("/tasks/{task_id}")
-  public ResponseEntity<String> deleteTask(@PathVariable Long task_id, HttpServletRequest request){
-    userService.deleteTask(request,task_id);
+  @DeleteMapping("/tasks/{taskId}")
+  public ResponseEntity<String> deleteTask(@PathVariable Long taskId, HttpServletRequest request){
+    userService.deleteTask(request,taskId);
     return ResponseEntity.ok("Task was successfully deleted");
   }
 
@@ -51,21 +49,36 @@ public class UserController {
   public ResponseEntity<List<Task>> getUserTasks(HttpServletRequest request){
     return ResponseEntity.ok(userService.getUserTasks(request));
   }
-
-  @GetMapping("/tasks/{user_id}")
-  public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable Long user_id){
-    return ResponseEntity.ok(userService.getUserTasksById(user_id));
+  @GetMapping("/tasks/user/{userId}")
+  public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable Long userId){
+    return ResponseEntity.ok(userService.getUserTasksById(userId));
   }
 
-  @PatchMapping("/tasks/{task_id}/{performer_id}")
-  public ResponseEntity<String> addPerformer(@PathVariable Long task_id,@PathVariable Long performer_id){
-    userService.addPerformer(task_id,performer_id);
+  @PostMapping("/tasks/{taskId}/performers/{performerId}")
+  public ResponseEntity<String> addPerformer(@PathVariable Long taskId,@PathVariable Long performerId){
+    userService.addPerformer(taskId,performerId);
     return ResponseEntity.ok("Performer was successfully added");
   }
-  @PostMapping("/tasks/{task_id}")
-  public ResponseEntity<String> addComment(@PathVariable Long task_id, @RequestBody CommentRequest commentRequest, HttpServletRequest request){
-    userService.addCommentToTask(task_id,commentRequest.getComment(),request);
+  @PostMapping("/tasks/comments/{taskId}")
+  public ResponseEntity<String> addComment(@PathVariable Long taskId, @RequestBody CommentRequest commentRequest, HttpServletRequest request){
+    userService.addCommentToTask(taskId,commentRequest.getComment(),request);
     return ResponseEntity.ok("Comment was successfully added");
+  }
+  @PatchMapping("/tasks/edit/{taskId}")
+  public ResponseEntity<String> updateTask(@PathVariable Long taskId, @RequestBody TaskUpdateRequest updateRequest, HttpServletRequest request){
+    userService.updateTask(taskId,updateRequest,request);
+    return ResponseEntity.ok("Task was successfully updated");
+  }
+  @PatchMapping("/tasks/status/{taskId}")
+  public ResponseEntity<String> updateStatus( @RequestBody UpdateStatusRequest updateStatusRequest, @PathVariable Long taskId,HttpServletRequest httpServletRequest)
+  {
+    userService.updateStatus(updateStatusRequest,taskId,httpServletRequest);
+    return ResponseEntity.ok("Status was successfully updated");
+  }
+
+  @GetMapping("/tasks/comments/{taskId}")
+  public ResponseEntity<List<Comment>> addComment(@PathVariable Long taskId){
+    return ResponseEntity.ok(userService.getCommentsByTaskId(taskId));
   }
 
 

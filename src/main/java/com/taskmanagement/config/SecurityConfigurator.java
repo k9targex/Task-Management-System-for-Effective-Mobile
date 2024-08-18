@@ -99,22 +99,37 @@ public class SecurityConfigurator {
         .authorizeHttpRequests(
             authorize ->
                 authorize
-                    .requestMatchers(HttpMethod.GET, "/users")
-                    .hasAuthority("AUTHOR")
-                    .requestMatchers(HttpMethod.POST, "/users/task")
-                    .hasAuthority("AUTHOR")
-                    .requestMatchers(HttpMethod.PATCH, "/users/task/{task_id}/{performer_id}")
-                    .hasAuthority("AUTHOR")
-                    .requestMatchers(HttpMethod.DELETE, "/users/task/{task_id}")
-                    .hasAuthority("AUTHOR")
-                    .requestMatchers(HttpMethod.GET, "/users/task")
-                    .hasAnyAuthority("AUTHOR", "PERFORMER")
-                    .requestMatchers(HttpMethod.GET, "/users/task/{user_id}")
-                    .hasAnyAuthority("AUTHOR", "PERFORMER")
-                    .requestMatchers(HttpMethod., "/users/task/{task_id}")
-                    .hasAnyAuthority("AUTHOR", "PERFORMER")
-                    .anyRequest()
-                    .permitAll())
+                        // Доступ для всех авторизованных пользователей
+                        .requestMatchers(HttpMethod.GET, "/users")
+                        .hasAnyAuthority("AUTHOR", "PERFORMER")
+                        .requestMatchers(HttpMethod.GET, "/users/tasks")
+                        .hasAnyAuthority("AUTHOR", "PERFORMER")
+                        .requestMatchers(HttpMethod.GET, "/users/tasks/user/{userId}")
+                        .hasAnyAuthority("AUTHOR", "PERFORMER")
+                        .requestMatchers(HttpMethod.POST, "/users/tasks/comments/{taskId}")
+                        .hasAnyAuthority("AUTHOR", "PERFORMER")
+                        .requestMatchers(HttpMethod.GET, "/users/tasks/comments/{taskId}")
+                        .hasAnyAuthority("AUTHOR", "PERFORMER")
+                        .requestMatchers(HttpMethod.GET, "/tasks")
+                        .hasAnyAuthority("AUTHOR", "PERFORMER")
+
+                        // Доступ для AUTHOR
+                        .requestMatchers(HttpMethod.POST, "/users/tasks")
+                        .hasAuthority("AUTHOR")
+                        .requestMatchers(HttpMethod.PATCH, "/users/tasks/edit/{taskId}")
+                        .hasAuthority("AUTHOR")
+                        .requestMatchers(HttpMethod.POST, "/users/tasks/{taskId}/performers/{performerId}")
+                        .hasAuthority("AUTHOR")
+                        .requestMatchers(HttpMethod.DELETE, "/users/tasks/{taskId}")
+                        .hasAuthority("AUTHOR")
+
+                        // Доступ для PERFORMER
+                        .requestMatchers(HttpMethod.PATCH, "/users/tasks/status/{taskId}")
+                        .hasAuthority("PERFORMER")
+
+                        // Разрешить все остальные запросы
+                        .anyRequest()
+                        .permitAll())
         .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }

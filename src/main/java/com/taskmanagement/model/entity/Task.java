@@ -1,12 +1,12 @@
 package com.taskmanagement.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.taskmanagement.model.Comment;
 import com.taskmanagement.model.TaskPriority;
 import com.taskmanagement.model.TaskStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,7 +28,7 @@ public class Task {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "task_comments", joinColumns = @JoinColumn(name = "task_id"))
-    private List<Comment> comments;
+    private List<Comment> comments = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private TaskStatus status;

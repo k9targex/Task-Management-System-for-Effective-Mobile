@@ -22,22 +22,21 @@ public class SecurityController {
     }
 
     @PostMapping("/signup")
-    ResponseEntity<String>  signup(@Valid  @RequestBody SignUpRequest signUpRequest,HttpServletResponse response) {
+    public ResponseEntity<String> signup(@Valid  @RequestBody SignUpRequest signUpRequest,HttpServletResponse response) {
 
         String token = securityService.register(signUpRequest);
         setCookie(token,response);
-        //for postman
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok("Successfully registered");
     }
 
     @CrossOrigin(origins = "/", allowCredentials = "true")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/signin")
-    ResponseEntity<String> signin(@Valid @RequestBody SignInRequest signInRequest, HttpServletResponse response) {
+    public ResponseEntity<String> signin(@Valid @RequestBody SignInRequest signInRequest, HttpServletResponse response) {
         String token = securityService.login(signInRequest);
         setCookie(token,response);
-        //for postman
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok("Successfully logged in");
+
     }
 
     void setCookie(String token,HttpServletResponse response){
