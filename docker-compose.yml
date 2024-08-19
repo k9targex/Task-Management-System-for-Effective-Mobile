@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: task-management-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgresql
+    networks:
+      - my-network
+
+  postgresql:
+    image: postgres
+    container_name: task-management-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
