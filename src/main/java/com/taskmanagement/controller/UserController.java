@@ -131,7 +131,7 @@ public class UserController {
   @PatchMapping("/tasks/edit/{taskId}")
   public ResponseEntity<String> updateTask(
       @Parameter(description = "ID of the task to be updated") @PathVariable Long taskId,
-      @RequestBody TaskUpdateRequest updateRequest,
+      @Valid @RequestBody TaskUpdateRequest updateRequest,
       HttpServletRequest request) {
     userService.updateTask(taskId, updateRequest, request);
     return ResponseEntity.ok("Task was successfully updated");
