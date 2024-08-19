@@ -1,3 +1,9 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=k9targex_Task-Management-System-for-Effective-Mobile&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=k9targex_Task-Management-System-for-Effective-Mobile)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=k9targex_Task-Management-System-for-Effective-Mobile&metric=bugs)](https://sonarcloud.io/summary/new_code?id=k9targex_Task-Management-System-for-Effective-Mobile)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=k9targex_Task-Management-System-for-Effective-Mobile&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=k9targex_Task-Management-System-for-Effective-Mobile)
+
+
+
 # Task Management System
 
 ## Overview
