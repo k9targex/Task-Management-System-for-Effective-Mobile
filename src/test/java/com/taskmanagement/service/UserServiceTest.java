@@ -33,7 +33,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.util.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+ class UserServiceTest {
     private static final String USER_NOT_FOUND_MESSAGE = "User with name \"%s\" does not exist";
     private static final String TASK_ID_NOT_FOUND_MESSAGE =
             "Task with ID \"%s\" does not exist for this author";

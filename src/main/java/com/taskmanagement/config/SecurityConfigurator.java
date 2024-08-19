@@ -31,6 +31,8 @@ public class SecurityConfigurator {
   private UserService userService;
   private MyAuthenticationEntryPoint authenticationEntryPoint;
   private MyAccessDeniedHandler accessDeniedHandler;
+  public static final String ROLE_AUTHOR = "AUTHOR";
+  public static final String ROLE_PERFORMER = "PERFORMER";
 
   @Autowired
   public void setMyAuthenticationEntryPoint(MyAuthenticationEntryPoint authenticationEntryPoint) {
@@ -101,32 +103,32 @@ public class SecurityConfigurator {
                 authorize
                     // Доступ для всех авторизованных пользователей
                     .requestMatchers(HttpMethod.GET, "/users")
-                    .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    .hasAnyAuthority(ROLE_PERFORMER, ROLE_AUTHOR)
                     .requestMatchers(HttpMethod.GET, "/users/tasks")
-                    .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    .hasAnyAuthority(ROLE_PERFORMER, ROLE_AUTHOR)
                     .requestMatchers(HttpMethod.GET, "/users/tasks/user/{userId}")
-                    .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    .hasAnyAuthority(ROLE_PERFORMER, ROLE_AUTHOR)
                     .requestMatchers(HttpMethod.POST, "/users/tasks/comments/{taskId}")
-                    .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    .hasAnyAuthority(ROLE_PERFORMER, ROLE_AUTHOR)
                     .requestMatchers(HttpMethod.GET, "/users/tasks/comments/{taskId}")
-                    .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    .hasAnyAuthority(ROLE_PERFORMER, ROLE_AUTHOR)
                     .requestMatchers(HttpMethod.GET, "/tasks")
-                    .hasAnyAuthority("AUTHOR", "PERFORMER")
+                    .hasAnyAuthority(ROLE_PERFORMER, ROLE_AUTHOR)
 
                     // Доступ для AUTHOR
                     .requestMatchers(HttpMethod.POST, "/users/tasks")
-                    .hasAuthority("AUTHOR")
+                    .hasAuthority(ROLE_AUTHOR)
                     .requestMatchers(HttpMethod.PATCH, "/users/tasks/edit/{taskId}")
-                    .hasAuthority("AUTHOR")
+                    .hasAuthority(ROLE_AUTHOR)
                     .requestMatchers(
                         HttpMethod.POST, "/users/tasks/{taskId}/performers/{performerId}")
-                    .hasAuthority("AUTHOR")
+                    .hasAuthority(ROLE_AUTHOR)
                     .requestMatchers(HttpMethod.DELETE, "/users/tasks/{taskId}")
-                    .hasAuthority("AUTHOR")
+                    .hasAuthority(ROLE_AUTHOR)
 
                     // Доступ для PERFORMER
                     .requestMatchers(HttpMethod.PATCH, "/users/tasks/status/{taskId}")
-                    .hasAuthority("PERFORMER")
+                    .hasAuthority(ROLE_PERFORMER)
 
                     // Разрешить все остальные запросы
                     .anyRequest()
