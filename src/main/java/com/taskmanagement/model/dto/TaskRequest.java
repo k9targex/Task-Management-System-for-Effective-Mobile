@@ -13,19 +13,18 @@ import lombok.Setter;
 @Setter
 @Builder
 public class TaskRequest {
-    @NotBlank(message = "Title is required")
-    private String title;
-    @Size(max=100, message = ("Description is to big"))
-    @NotBlank(message = "Description is required")
-    private String description;
+  @NotBlank(message = "Title is required")
+  private String title;
 
+  @Size(max = 100, message = ("Description is to big"))
+  @NotBlank(message = "Description is required")
+  private String description;
 
-    @NotNull(message = "Status is required")
-    private TaskStatus status;
+  @NotNull(message = "Status is required")
+  private TaskStatus status;
 
-    @NotNull(message = "Priority is required")
-    private TaskPriority priority;
+  @NotNull(message = "Priority is required")
+  private TaskPriority priority;
 
-
-    private String comment;
+  private String comment;
 }

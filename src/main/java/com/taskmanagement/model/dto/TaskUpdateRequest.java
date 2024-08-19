@@ -11,13 +11,12 @@ import lombok.Setter;
 @Setter
 @Builder
 public class TaskUpdateRequest {
-    private String title;
+  private String title;
 
-    @Size(max=100, message = ("Description is to big"))
-    private String description;
+  @Size(max = 100, message = ("Description is to big"))
+  private String description;
 
-    private TaskStatus status;
+  private TaskStatus status;
 
-    private TaskPriority priority;
-
+  private TaskPriority priority;
 }

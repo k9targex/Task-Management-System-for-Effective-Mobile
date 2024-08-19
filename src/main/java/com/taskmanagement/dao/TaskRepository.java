@@ -5,15 +5,14 @@ import com.taskmanagement.model.TaskPriority;
 import com.taskmanagement.model.TaskStatus;
 import com.taskmanagement.model.entity.Task;
 import com.taskmanagement.model.entity.User;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import java.util.List;
-import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
@@ -37,22 +36,28 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
   @Query("SELECT t.comments FROM Task t WHERE t.id = :taskId")
   List<Comment> findCommentsByTaskId(@Param("taskId") Long taskId);
 
-
-
-//  @EntityGraph(attributePaths = {"comments"})
+  //  @EntityGraph(attributePaths = {"comments"})
   @Query("SELECT t FROM Task t WHERE (t.author = :user OR t.performer = :user)")
   Page<Task> findAllTasksByUser(@Param("user") User user, Pageable pageable);
 
-//  @EntityGraph(attributePaths = {"comments"})
-  @Query("SELECT t FROM Task t WHERE (t.author = :user OR t.performer = :user) AND t.status = :status")
-  Page<Task> findAllTasksByUserAndStatus(@Param("user") User user, @Param("status") TaskStatus status, Pageable pageable);
+  //  @EntityGraph(attributePaths = {"comments"})
+  @Query(
+      "SELECT t FROM Task t WHERE (t.author = :user OR t.performer = :user) AND t.status = :status")
+  Page<Task> findAllTasksByUserAndStatus(
+      @Param("user") User user, @Param("status") TaskStatus status, Pageable pageable);
 
-//  @EntityGraph(attributePaths = {"comments"})
-  @Query("SELECT t FROM Task t WHERE (t.author = :user OR t.performer = :user) AND t.priority = :priority")
-  Page<Task> findAllTasksByUserAndPriority(@Param("user") User user, @Param("priority") TaskPriority priority, Pageable pageable);
+  //  @EntityGraph(attributePaths = {"comments"})
+  @Query(
+      "SELECT t FROM Task t WHERE (t.author = :user OR t.performer = :user) AND t.priority = :priority")
+  Page<Task> findAllTasksByUserAndPriority(
+      @Param("user") User user, @Param("priority") TaskPriority priority, Pageable pageable);
 
-//  @EntityGraph(attributePaths = {"comments"})
-  @Query("SELECT t FROM Task t WHERE (t.author = :user OR t.performer = :user) AND t.status = :status AND t.priority = :priority")
-  Page<Task> findAllTasksByUserAndStatusAndPriority(@Param("user") User user, @Param("status") TaskStatus status, @Param("priority") TaskPriority priority, Pageable pageable);
-
+  //  @EntityGraph(attributePaths = {"comments"})
+  @Query(
+      "SELECT t FROM Task t WHERE (t.author = :user OR t.performer = :user) AND t.status = :status AND t.priority = :priority")
+  Page<Task> findAllTasksByUserAndStatusAndPriority(
+      @Param("user") User user,
+      @Param("status") TaskStatus status,
+      @Param("priority") TaskPriority priority,
+      Pageable pageable);
 }

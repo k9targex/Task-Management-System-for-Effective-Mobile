@@ -10,11 +10,9 @@ import lombok.Setter;
 @Setter
 @Builder
 public class SignInRequest {
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
-    private String email;
+  @NotBlank(message = "Email is required")
+  @Email(message = "Email should be valid")
+  private String email;
 
-    private String password;
-
-
+  private String password;
 }

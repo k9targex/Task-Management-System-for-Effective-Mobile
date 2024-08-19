@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.taskmanagement.model.RoleList;
 import jakarta.persistence.*;
-
 import java.util.List;
-
-
 import lombok.*;
 
 @Entity
