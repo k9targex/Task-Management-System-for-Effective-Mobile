@@ -176,21 +176,26 @@ A Postman collection is provided to facilitate testing the API endpoints. Follow
    #spring.datasource.url=jdbc:postgresql://localhost:5432/TaskManagement
    ```
    
-5. Build application:
+
+
+### Run in container
+   1. Build application:
+      ```
+      mvn clean package -DskipTests
+      ```
+   3.  Build and start the Docker containers:
+
+       ```
+       docker-compose up --build
+       ```
+### Run manually
+1. Create the PostgreSQL database TaskManagement.
+2. Build application:
    ```bash
    mvn clean package -DskipTests
    ```
-
-### Run in container
-- Build and start the Docker containers:
+3. Run application
    ```bash
-   docker-compose up --build
-   ```
-
-### Run manually
-
-- Run application
-   ```
    java -jar target/TaskManagement-0.0.1-SNAPSHOT.jar
    ```
 ## License
