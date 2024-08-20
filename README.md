@@ -207,6 +207,9 @@ A Postman collection is provided to facilitate testing the API endpoints. Follow
    ```bash
    java -jar target/TaskManagement-0.0.1-SNAPSHOT.jar
    ```
+
+## Contributing
+ Contributions are welcome! If you find any issues or want to add new features, please submit a pull request.
 ## License
   This project is licensed under the MIT License. See the LICENSE file for more information.
 ## Author
