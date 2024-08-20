@@ -38,7 +38,16 @@ The Task Management System uses JWT (JSON Web Tokens) for authenticating users. 
 - **Simplified Requests**: By automatically including the JWT in the cookie, you don't need to manually attach the token to each API request. The browser will automatically send the cookie with each request to the server, simplifying the authentication process.
 
 
-  
+## Custom Error Handling and Logging
+
+### Custom Error Handling
+
+The application includes a custom error handler to manage and respond to exceptions consistently. The custom error handler catches various types of exceptions and returns appropriate HTTP responses.
+
+### Logging with Aspects
+
+Logging is implemented using Spring AOP to capture and record method execution details across the application. This approach ensures that logging concerns are separated from the core business logic.
+
 ## Technologies Used
 
 - **Java 17+**
