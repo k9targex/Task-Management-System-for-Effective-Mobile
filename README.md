@@ -201,7 +201,7 @@ A Postman collection is provided to facilitate testing the API endpoints. Follow
 1. Create the PostgreSQL database TaskManagement.
 2. Build application:
    ```bash
-   mvn clean package -DskipTests
+   mvn clean package 
    ```
 3. Run application
    ```bash
